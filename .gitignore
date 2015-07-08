@@ -44,6 +44,7 @@ pkg
 
 # For redcar:
 #.redcar
+.env
 
 # For rubinius:
 #*.rbc
