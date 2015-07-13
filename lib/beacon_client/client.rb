@@ -7,26 +7,71 @@ module BeaconClient
       connect!
     end
 
-    private
+    def get(path, params={})
+      connection.get path, params
+    rescue OAuth2::Error => error
+      BeaconClient.logger.error error.message
+      BeaconClient.logger.error error.backtrace.join("\n")
+    end
 
+    def put(path, params={})
+      connection.put path, params
+    rescue OAuth2::Error => error
+      BeaconClient.logger.error error.message
+      BeaconClient.logger.error error.backtrace.join("\n")
+    end
+
+    def post(path, params={})
+      connection.post path, params
+    rescue OAuth2::Error => error
+      BeaconClient.logger.error error.message
+      BeaconClient.logger.error error.backtrace.join("\n")
+    end
+
+    def delete(path, params={})
+      connection.delete path, params
+    rescue OAuth2::Error => error
+      BeaconClient.logger.error error.message
+      BeaconClient.logger.error error.backtrace.join("\n")
+    end
+
+    def patch(path, params={})
+      connection.patch path, params
+    rescue OAuth2::Error => error
+      BeaconClient.logger.error error.message
+      BeaconClient.logger.error error.backtrace.join("\n")
+    end
+
+    private
     def connect!
-      @auth_token = user ? connection_for_user : connection_for_application
+      @connection = user ? connection_for_user : connection_for_application
+      @auth_token = @connection.token
+      BeaconClient.logger.info "Client token: #{@auth_token}"
+    rescue OAuth2::Error => error
+      BeaconClient.logger.error error.message
+      BeaconClient.logger.error error.backtrace.join("\n")
     end
 
     def connection_for_application
-      ::OAuth2::Strategy::ClientCredentials.new(oauth_client).get_token.token
+      oauth_client.client_credentials.get_token
     end
 
     def connection_for_user
-      ::OAuth2::Strategy::Password.new(oauth_client).get_token(user.email, user.password).token
+      puts [user.email, user.password].inspect
+      oauth_client.password.get_token(
+        user.email, user.password,
+        email: user.email
+      )
     end
 
+    # noinspection RubyArgCount
     def oauth_client
-      ::OAuth2::Client.new(
+      @oauth_client ||= ::OAuth2::Client.new(
         BeaconClient.config.client_id,
         BeaconClient.config.client_secret,
         site: BeaconClient.config.beacon_s2s_uri,
-        token_url: URI.join(BeaconClient.config.beacon_s2s_uri, 'oauth/token')
+        token_url: URI.join(BeaconClient.config.beacon_s2s_uri, 'oauth/token'),
+        authorize_url: URI.join(BeaconClient.config.beacon_s2s_uri, 'oauth/authorize_url')
       )
     end
   end

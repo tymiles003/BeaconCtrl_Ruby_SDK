@@ -24,6 +24,17 @@ module BeaconClient
       @beacon_s2s_uri ||= URI.join(beacon_ctrl_uri, uri)
     end
 
+    def user
+      @user ||= OpenStruct.new(
+        email: ENV['BEACON_CLIENT_USER_EMAIL'],
+        password: ENV['BEACON_CLIENT_USER_PASSWORD'],
+      ) if ENV['BEACON_CLIENT_USER_PASSWORD'] && ENV['BEACON_CLIENT_USER_EMAIL']
+    end
+
+    def debug?
+      ENV['BEACON_CLIENT_DEBUG'] == 'true'
+    end
+
     private
 
     def load_env

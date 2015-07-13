@@ -5,12 +5,12 @@ module BeaconClient
     require_relative './beacon_client/engine'
 
     autoload :Configuration
-    autoload :Connection
     autoload :Client
+    autoload :Relation
   else
     require_relative './beacon_client/configuration'
-    require_relative './beacon_client/connection'
     require_relative './beacon_client/client'
+    require_relative './beacon_client/relation'
     require_relative './beacon_client/autoload'
   end
 
@@ -20,5 +20,9 @@ module BeaconClient
 
   def self.configure
     yield config if block_given?
+  end
+
+  def self.logger
+    @logger ||= ::Logger.new(STDOUT)
   end
 end

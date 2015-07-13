@@ -11,3 +11,4 @@ end
 
 gem 'faraday', '>= 0'
 gem 'oauth2', '>= 0'
+gem 'rest-client'
