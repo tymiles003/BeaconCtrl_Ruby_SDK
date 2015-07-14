@@ -1,12 +1,19 @@
 module BeaconClient
+  # Validates BeaconClient::Base attributes
   class Validator
     attr_reader :attribute, :validations
 
+    # @param [String|Symbol] attribute
+    # @param [Hash] validations
     def initialize(attribute, validations={})
       @attribute = attribute
       @validations = {}.merge(validations)
     end
 
+    # Check if instance is valid
+    # and add errors to instance {BeaconClient::Error}
+    #
+    # @param [BeaconClient::Base] object
     def validate(object)
       @validations.each_pair do |name, value|
         if respond_to?(name)
@@ -15,12 +22,16 @@ module BeaconClient
           custom_validation(object, name, value)
         end
       end
-    rescue StandardError => error
-      BeaconClient.logger.error error
-      BeaconClient.logger.error error.backtrace.join("\n")
-      false
     end
 
+    private
+
+    # Execute non-standard validation
+    #
+    # @param [BeaconClient::Base] object
+    # @param [String] name
+    # @param [TrueClass|Proc|String|Symbol|Regexp] value
+    # @return [TrueClass]
     def custom_validation(object, name, value)
       res = case value
             when true
@@ -40,6 +51,8 @@ module BeaconClient
       true
     end
 
+    # @param [BeaconClient::Base] object
+    # @param [Object]
     def numericality(object, *)
       value = object.public_send(attribute)
       unless value.is_a?(Fixnum)
@@ -47,6 +60,8 @@ module BeaconClient
       end
     end
 
+    # @param [BeaconClient::Base] object
+    # @param [Object]
     def presence(object, *)
       value = object.public_send(attribute)
       if value.nil?
@@ -54,6 +69,8 @@ module BeaconClient
       end
     end
 
+    # @param [BeaconClient::Base] object
+    # @param [Regexp] regex
     def format(object, regex)
       value = object.public_send(attribute)
       unless value.to_s.match(regex)

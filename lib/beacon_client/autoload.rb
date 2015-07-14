@@ -1,5 +1,7 @@
 module BeaconClient
+  # Inject app directory to ruby autoload mechanism
   module Autoload
+    # Transform path into constant name
     def self.path_to_name(path)
       path.
         gsub(/.+\/beacon_client\/app\/[^\/]+/, '').

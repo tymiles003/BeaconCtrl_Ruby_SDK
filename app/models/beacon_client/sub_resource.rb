@@ -4,16 +4,20 @@ module BeaconClient
     ParentIdMissing = Class.new(::StandardError)
 
     def save(parent_or_id, params = {}, key = fetch_instance_key)
-      return self.class.create(parent_or_id, params, key) unless persist?
+      return self.class.create(parent_or_id, params, key, self) unless persist?
       path = build_path(*prepare_for_path_builder(parent_or_id), id.to_i)
-      response = self.class.connection.put(path, attributes.merge(params))
-      fetch_instance(response, key.to_s)
+      params = attributes.merge(params)
+      response = self.class.connection.put(path, params_instance_key => params)
+      fetch_instance(response, key.to_s, self)
+      errors.empty? ? self : false
     end
 
     def delete(parent_or_id, key=fetch_instance_key)
       path = build_path(*prepare_for_path_builder(parent_or_id), id.to_i)
-      response = self.class.connection.delete(path, attributes.merge(params))
-      fetch_instance(response, key.to_s)
+      params = attributes
+      response = self.class.connection.delete(path, params_instance_key => params)
+      fetch_instance(response, key.to_s, self)
+      errors.empty? ? self : false
     end
 
     class << self
@@ -21,18 +25,19 @@ module BeaconClient
         path = build_path(*prepare_for_path_builder(parent_or_id), id.to_i)
         response = connection.get(path)
         fetch_instance(response, key.to_s)
+        instance
       end
 
-      def all(parent_or_id, key = fetch_collection_key)
+      def all(parent_or_id, params = {}, key = fetch_collection_key)
         path = build_path(*prepare_for_path_builder(parent_or_id))
-        response = connection.get(path)
+        response = connection.get(path, params_collection_key => params)
         fetch_collection(response, key.to_s)
       end
 
-      def create(parent_or_id, params={}, key = fetch_instance_key)
+      def create(parent_or_id, params={}, key = fetch_instance_key, instance = nil)
         path = build_path(*prepare_for_path_builder(parent_or_id))
-        response = connection.post(path, attributes.merge(params))
-        fetch_instance(response, key.to_s)
+        response = connection.post(path, params_instance_key => params)
+        fetch_instance(response, key.to_s, instance)
       end
 
       def parent_class=(klass)

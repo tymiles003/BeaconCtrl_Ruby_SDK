@@ -18,15 +18,30 @@ module BeaconClient
   end
   require_relative './beacon_client/autoload'
 
+  # Connection configuration
+  #
+  # @return [BeaconClient::Configuration]
   def self.config
     @config ||= BeaconClient::Configuration.new
   end
 
+  # Create config and yield given block.
+  #
+  # @return [BeaconClient::Configuration]
   def self.configure
     yield config if block_given?
   end
 
+  # Current Client logger
+  # By default this is ::Logger.new(STDOUT)
+  #
+  # @return [Logger]
   def self.logger
     @logger ||= ::Logger.new(STDOUT)
+  end
+
+  # @param [Logger] logger
+  def self.logger=(logger)
+    @logger = logger
   end
 end

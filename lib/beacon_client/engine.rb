@@ -1,4 +1,5 @@
 module BeaconClient
+  # Rails mountable engine
   class Engine < Rails::Engine
     initializer 'beacon_client' do |app|
       config.paths.keys.each do |key|

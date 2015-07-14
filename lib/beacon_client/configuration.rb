@@ -1,4 +1,5 @@
 module BeaconClient
+  # Simple connection config store
   class Configuration
     attr_accessor :client_id, :client_secret
 

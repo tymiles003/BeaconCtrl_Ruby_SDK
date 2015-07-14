@@ -1,68 +1,77 @@
 module BeaconClient
+  # OAuth2 wrapper
   class Client
     attr_reader :connection, :user, :auth_token
 
+    # @param [Object] user - if given connection will be created for specific user (recommended)
     def initialize(user=nil)
       @user = user
       connect!
     end
 
+    # CRUD get
     def get(path, params={})
-      BeaconClient.logger.info("Params: #{params.inspect}")
-      connection.get(path, params)
-    rescue OAuth2::Error => error
-      BeaconClient.logger.error(error.message)
-      error.response
+      request(:get, path, params)
     end
 
+    # CRUD put
     def put(path, params={})
-      BeaconClient.logger.info("Params: #{params.inspect}")
-      connection.put(path, params)
-    rescue OAuth2::Error => error
-      BeaconClient.logger.error(error.message)
-      error.response
+      request(:put, path, params)
     end
 
+    # CRUD post
     def post(path, params={})
-      BeaconClient.logger.info("Params: #{params.inspect}")
-      connection.post(path, params: params)
-    rescue OAuth2::Error => error
-      BeaconClient.logger.error(error.message)
-      error.response
+      request(:post, path, params)
     end
 
+    # CRUD delete
     def delete(path, params={})
-      BeaconClient.logger.info("Params: #{params.inspect}")
-      connection.delete(path, params)
-    rescue OAuth2::Error => error
-      BeaconClient.logger.error(error.message)
-      error.response
+      request(:delete, path, params)
     end
 
+    # CRUD patch
     def patch(path, params={})
-      BeaconClient.logger.info("Params: #{params.inspect}")
-      connection.patch(path, params)
-    rescue OAuth2::Error => error
-      BeaconClient.logger.error(error.message)
-      error.response
+      request(:patch, path, params)
     end
 
     private
+
+    # Sending request using OAuth2 + Faraday connection.
+    # All credentials are automatically added.
+    def request(word, path, params)
+      BeaconClient.logger.info("Path: #{path.inspect}")
+      BeaconClient.logger.debug("Params: #{params.inspect}")
+      connection.send(word, path, params)
+    rescue OAuth2::Error => error
+      BeaconClient.logger.error(error.message)
+      error.response
+    end
+
+    # Create new connection between BeaconCtrl and BeaconClient
+    # New oauth token should be returned by server.
     def connect!
       @connection = user ? connection_for_user : connection_for_application
       @auth_token = @connection.token
-      BeaconClient.logger.info "Client token: #{@auth_token}"
+      BeaconClient.logger.debug("Client token: #{@auth_token}")
     rescue OAuth2::Error => error
-      BeaconClient.logger.error error.message
-      BeaconClient.logger.error error.backtrace.join("\n")
+      BeaconClient.logger.error(error.message)
+      BeaconClient.logger.error(error.backtrace.join("\n"))
     end
 
+    # Connect as an application
+    # No user credentials are required
+    # Not recommended and poorly supported
+    #
+    # Require ApplicationID and ApplicationSecret
     def connection_for_application
       oauth_client.client_credentials.get_token
     end
 
+    # Connect as an User
+    #
+    # Require ApplicationID, ApplicationSecret, UserEmail, UserPassword
     def connection_for_user
-      puts [user.email, user.password].inspect
+      BeaconClient.logger.debug([user.email.inspect, user.password.inspect].join(' : '))
       oauth_client.password.get_token(
         user.email, user.password,
         email: user.email
@@ -70,7 +79,7 @@ module BeaconClient
     end
 
     # noinspection RubyArgCount
-    def oauth_client
+    def oauth_client # :nodoc:
       @oauth_client ||= ::OAuth2::Client.new(
         BeaconClient.config.client_id,
         BeaconClient.config.client_secret,

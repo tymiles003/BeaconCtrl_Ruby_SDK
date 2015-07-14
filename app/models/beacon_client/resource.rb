@@ -23,20 +23,36 @@ module BeaconClient
     class << self
       attr_accessor :namespace
 
+      # Send request for one record.
+      # This is not always supported by API
+      #
+      # @param [Fixnum] id
+      # @param [String] key
+      # @return [BeaconClient::Resource]
       def find(id, key=fetch_instance_key)
         path = build_path(namespace, resources_name, id.to_i)
         response = self.connection.get(path)
-        fetch_instance(response, key)
+        instance = fetch_instance(response, key)
         instance.send(:persist!)
         instance
       end
 
-      def all(key=fetch_collection_key)
+      # Send request for all available for user records.
+      #
+      # @param [Hash] params
+      # @param [String] key
+      # @return [Array<BeaconClient::Resource>]
+      def all(params = {}, key=fetch_collection_key)
         path = build_path(namespace, resources_name)
-        response = self.connection.get(path)
+        response = self.connection.get(path, params_collection_key => params)
         fetch_collection(response, key.to_s)
       end
 
+      # Create new record
+      #
+      # @param [Hash] params
+      # @param [String] key
+      # @param [BeaconClient::Resource] instance - if given response will be written to this instance, otherwise new instance will be returned
       def create(params={}, key=fetch_instance_key, instance = nil)
         path = build_path(namespace, resources_name)
         response = self.connection.post(path, params_instance_key => params)
@@ -44,16 +60,26 @@ module BeaconClient
         instance.errors.empty? && instance
       end
 
+      # Create new connection between BeaconCtrl and Client
+      #
+      # @param [Object] user
+      # @return [BeaconClient::Client]
       def connect!(user=nil)
         @@client ||= ::BeaconClient::Client.new(user || BeaconClient.config.user)
       end
 
-      # @return [Faraday::Connection]
+      # Current connection with BeaconCtrl
+      # If not exists will create new.
+      #
+      # @return [BeaconClient::Client]
       def connection
         connect! unless defined? @@client
         @@client
       end
 
+      # JSON key in which are stored object data.
+      #
+      # @return [String]
       def fetch_instance_key
         @fetch_instance_key ||= resource_name
       end
@@ -62,6 +88,9 @@ module BeaconClient
         @fetch_instance_key = key
       end
 
+      # JSON key in which are stored objects data.
+      #
+      # @return [String]
       def fetch_collection_key
         @fetch_collection_key ||= resources_name
       end
@@ -70,6 +99,9 @@ module BeaconClient
         @fetch_collection_key = key
       end
 
+      # Request parameters root key
+      #
+      # @return [String]
       def params_instance_key
         @params_instance_key ||= resource_name
       end
@@ -78,6 +110,9 @@ module BeaconClient
         @params_instance_key = key
       end
 
+      # Request parameters root key
+      #
+      # @return [String]
       def params_collection_key
         @params_collection_key ||= resources_name
       end
@@ -86,12 +121,17 @@ module BeaconClient
         @params_collection_key = key
       end
 
+      # Join path attributes
+      #
+      # @return [String]
       def build_path(*args)
         args.reject(&:nil?).join('/')
       end
 
       private
 
+      # Print information about failed request.
+      #
       # @param [Faraday::Response] response
       def log_response(response)
         BeaconClient.logger.warn("Response code: #{ response.status }")
@@ -102,27 +142,15 @@ module BeaconClient
         end
       end
 
-      # @param [String] body
-      def log_body(body)
-        BeaconClient.logger.info "Response body: #{body.inspect}"
-      end
-
-      # @param [String] body
-      def parse_body(body)
-        body = body.to_s.strip
-        log_body(body) if BeaconClient.config.debug?
-        body.size > 0 ? JSON.parse(body) : nil
-      rescue JSON::ParserError
-        BeaconClient.logger.info("Response is not a JSON")
-        nil
-      end
-
+      # Create or update BeaconClient::Base instance from
+      # given HTTP response.
+      #
       # @param [Faraday:Response] response
       # @param [String] key
       # @param [BeaconClient::Base] instance
       def fetch_instance(response, key=fetch_instance_key, instance=nil)
         log_response(response) if response.status > 299
-        body = parse_body(response.body)
+        body = response.parsed.is_a?(Hash) ? response.parsed : nil
         instance ||= new
         if body
           instance.write_attributes(body[key.to_s])
@@ -134,11 +162,14 @@ module BeaconClient
         instance
       end
 
+      # Create or update BeaconClient::Base instances from
+      # given HTTP response.
+      #
       # @param [Faraday:Response] response
       # @param [String] key
       def fetch_collection(response, key=fetch_collection_key)
         log_response(response) if response.status > 299
-        body = parse_body(response.body)
+        body = response.parsed.is_a?(Hash) ? response.parsed : nil
         array = body && body[key] ? body[key] : []
         array.map do |json|
           instance = new json
