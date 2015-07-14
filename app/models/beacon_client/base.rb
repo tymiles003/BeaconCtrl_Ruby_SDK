@@ -2,13 +2,17 @@ module BeaconClient
   class Base
     def initialize(params={})
       @attributes = {}
-      params.each_pair do |key, value|
+      write_attributes(params)
+    end
+
+    def write_attributes(attributes)
+      attributes.each_pair do |key, value|
         public_send("#{key}=", value)
-      end if params.is_a?(Hash)
+      end if attributes.is_a?(Hash)
     end
 
     def method_missing(name, *_, &block)
-      BeaconClient.logger.warn "Unknown attribute #{name}, skipping..."
+      BeaconClient.logger.warn "#{self.class.name} unknown attribute #{name}, skipping..."
     end
 
     def attributes
@@ -17,17 +21,11 @@ module BeaconClient
     end
 
     def errors
-      @errors ||= {}
-    end
-
-    def errors=(data)
-      return unless data
-      @errors.merge! data
-      valid?
+      @errors ||= BeaconClient::Error.new
     end
 
     def valid?
-      errors.keys.size == 0
+      validate!
     end
 
     def persist?
@@ -43,6 +41,14 @@ module BeaconClient
 
     private
 
+    def validate!
+      errors.clear
+      self.class.validators.each do |validator|
+        validator.validate(self)
+      end
+      errors.empty?
+    end
+
     def persist!
       @attributes_cache = attributes.freeze
     end
@@ -50,15 +56,17 @@ module BeaconClient
     class << self
       attr_accessor :relations
 
+      public
+
       def attributes(*attrs)
         instance_eval "attr_accessor #{ attrs.map(&:inspect).join(', ') }"
         attrs.each do |attr|
           define_method(attr) do
-            @attributes[attr]
+            @attributes[attr.to_s]
           end
 
           define_method("#{attr}=") do |value|
-            @attributes[attr] = value
+            @attributes[attr.to_s] = value
           end
         end
       end
@@ -103,6 +111,18 @@ module BeaconClient
 
       def resources_name=(resources_name)
         @resources_name = resources_name
+      end
+
+      def validates(*attrs)
+        opts = attrs.pop
+        attrs.each do |attr|
+          validator = BeaconClient::Validator.new(attr, opts)
+          validators << validator
+        end
+      end
+
+      def validators
+        @validators ||= []
       end
     end
   end

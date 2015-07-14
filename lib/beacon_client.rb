@@ -7,12 +7,16 @@ module BeaconClient
     autoload :Configuration
     autoload :Client
     autoload :Relation
+    autoload :Validator
+    autoload :Error
   else
     require_relative './beacon_client/configuration'
     require_relative './beacon_client/client'
     require_relative './beacon_client/relation'
-    require_relative './beacon_client/autoload'
+    require_relative './beacon_client/validator'
+    require_relative './beacon_client/error'
   end
+  require_relative './beacon_client/autoload'
 
   def self.config
     @config ||= BeaconClient::Configuration.new

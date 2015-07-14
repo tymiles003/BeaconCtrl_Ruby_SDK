@@ -8,38 +8,43 @@ module BeaconClient
     end
 
     def get(path, params={})
-      connection.get path, params
+      BeaconClient.logger.info("Params: #{params.inspect}")
+      connection.get(path, params)
     rescue OAuth2::Error => error
-      BeaconClient.logger.error error.message
-      BeaconClient.logger.error error.backtrace.join("\n")
+      BeaconClient.logger.error(error.message)
+      error.response
     end
 
     def put(path, params={})
-      connection.put path, params
+      BeaconClient.logger.info("Params: #{params.inspect}")
+      connection.put(path, params)
     rescue OAuth2::Error => error
-      BeaconClient.logger.error error.message
-      BeaconClient.logger.error error.backtrace.join("\n")
+      BeaconClient.logger.error(error.message)
+      error.response
     end
 
     def post(path, params={})
-      connection.post path, params
+      BeaconClient.logger.info("Params: #{params.inspect}")
+      connection.post(path, params: params)
     rescue OAuth2::Error => error
-      BeaconClient.logger.error error.message
-      BeaconClient.logger.error error.backtrace.join("\n")
+      BeaconClient.logger.error(error.message)
+      error.response
     end
 
     def delete(path, params={})
-      connection.delete path, params
+      BeaconClient.logger.info("Params: #{params.inspect}")
+      connection.delete(path, params)
     rescue OAuth2::Error => error
-      BeaconClient.logger.error error.message
-      BeaconClient.logger.error error.backtrace.join("\n")
+      BeaconClient.logger.error(error.message)
+      error.response
     end
 
     def patch(path, params={})
-      connection.patch path, params
+      BeaconClient.logger.info("Params: #{params.inspect}")
+      connection.patch(path, params)
     rescue OAuth2::Error => error
-      BeaconClient.logger.error error.message
-      BeaconClient.logger.error error.backtrace.join("\n")
+      BeaconClient.logger.error(error.message)
+      error.response
     end
 
     private
