@@ -40,6 +40,10 @@ module BeaconClient
       ) if ENV['BEACON_CLIENT_USER_PASSWORD'] && ENV['BEACON_CLIENT_USER_EMAIL']
     end
 
+    def user=(user)
+      @user = user
+    end
+
     def debug?
       ENV['BEACON_CLIENT_DEBUG'] == 'true'
     end
