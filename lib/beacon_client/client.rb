@@ -47,8 +47,10 @@ module BeaconClient
     # Sending request using OAuth2 + Faraday connection.
     # All credentials are automatically added.
     def request(word, path, params)
-      BeaconClient.logger.info("Path: #{path.inspect}")
-      BeaconClient.logger.debug("Params: #{params.inspect}")
+      if BeaconClient.config.debug?
+        BeaconClient.logger.debug("Path: #{path.inspect}")
+        BeaconClient.logger.debug("Params: #{params.inspect}")
+      end
       connection.send(word, path, params)
     rescue OAuth2::Error => error
       BeaconClient.logger.error(error.message)
@@ -60,7 +62,7 @@ module BeaconClient
     def connect!
       @connection = user ? connection_for_user : connection_for_application
       @auth_token = @connection.token
-      BeaconClient.logger.debug("Client token: #{@auth_token}")
+      BeaconClient.logger.debug("Client token: #{@auth_token}") if BeaconClient.config.debug?
     rescue OAuth2::Error => error
       BeaconClient.logger.error(error.message)
       BeaconClient.logger.error(error.backtrace.join("\n"))

@@ -25,7 +25,7 @@ module BeaconClient
 
     def attributes
       @attributes ||= {}
-      @attributes.clone
+      @attributes.clone.freeze
     end
 
     def errors
