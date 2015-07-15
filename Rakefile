@@ -25,8 +25,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "beacon_client"
   gem.homepage = "http://github.com/Eraden/beacon_client"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{BeaconCtrl API client}
+  gem.description = %Q{BeaconCtrl S2S API for communication between server and ruby application}
   gem.email = "adrian.wozniak@ita-prog.pl"
   gem.authors = ["Adrian Wozniak"]
   # dependencies defined in Gemfile
