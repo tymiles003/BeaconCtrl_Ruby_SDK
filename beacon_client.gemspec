@@ -40,6 +40,7 @@ Gem::Specification.new do |s|
     "app/models/beacon_client/user.rb",
     "app/models/beacon_client/zone.rb",
     "app/models/beacon_client/zone_beacon.rb",
+    "beacon_client.gemspec",
     "lib/beacon_client.rb",
     "lib/beacon_client/autoload.rb",
     "lib/beacon_client/client.rb",
