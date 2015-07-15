@@ -8,6 +8,6 @@
 
 module BeaconClient
   class Location < Base
-    attributes :lat, :lng, :floor
+    attributes :lat, :lng, :floor, :address
   end
 end

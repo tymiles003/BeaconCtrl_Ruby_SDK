@@ -11,8 +11,10 @@ module BeaconClient
     self.namespace = 'admin'
     self.fetch_collection_key = 'admins'
     self.fetch_instance_key = 'admin'
+    self.params_instance_key = 'admin'
 
     attributes :id, :role, :email
+    attributes :password, :password_confirmation, :encrypted_password
 
     validates :email,
               presence: true,
