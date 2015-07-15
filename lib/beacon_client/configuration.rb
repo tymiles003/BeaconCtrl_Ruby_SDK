@@ -34,10 +34,7 @@ module BeaconClient
     end
 
     def user
-      @user ||= OpenStruct.new(
-        email: ENV['BEACON_CLIENT_USER_EMAIL'],
-        password: ENV['BEACON_CLIENT_USER_PASSWORD'],
-      ) if ENV['BEACON_CLIENT_USER_PASSWORD'] && ENV['BEACON_CLIENT_USER_EMAIL']
+      @user ||= user_from_env
     end
 
     def user=(user)
@@ -49,6 +46,13 @@ module BeaconClient
     end
 
     private
+
+    def user_from_env
+      OpenStruct.new(
+        email: ENV['BEACON_CLIENT_USER_EMAIL'],
+        password: ENV['BEACON_CLIENT_USER_PASSWORD'],
+      ) if ENV['BEACON_CLIENT_USER_PASSWORD'] && ENV['BEACON_CLIENT_USER_EMAIL']
+    end
 
     def load_env
       return unless File.exists?('./.env')

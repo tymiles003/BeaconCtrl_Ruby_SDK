@@ -73,7 +73,7 @@ module BeaconClient
       # @param [Object] user
       # @return [BeaconClient::Client]
       def connect!(user=nil)
-        @@client ||= ::BeaconClient::Client.new(user || BeaconClient.config.user)
+        @@client = ::BeaconClient::Client.new(user || BeaconClient.config.user)
       end
 
       # Current connection with BeaconCtrl

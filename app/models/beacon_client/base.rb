@@ -47,6 +47,13 @@ module BeaconClient
       end
     end
 
+    def changes
+      @attributes.reduce({}) do |memo, (key, value)|
+        memo[key] = value unless @attributes_cache[key] == value
+        memo
+      end
+    end
+
     private
 
     def validate!
@@ -67,7 +74,6 @@ module BeaconClient
       public
 
       def attributes(*attrs)
-        instance_eval "attr_accessor #{ attrs.map(&:inspect).join(', ') }"
         attrs.each do |attr|
           define_method(attr) do
             @attributes[attr.to_s]
