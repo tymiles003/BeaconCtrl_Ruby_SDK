@@ -51,10 +51,17 @@ module BeaconClient
         BeaconClient.logger.debug("Path: #{path.inspect}")
         BeaconClient.logger.debug("Params: #{params.inspect}")
       end
+      ensure_token_valid
       connection.send(word, path, params: params)
     rescue OAuth2::Error => error
       BeaconClient.logger.error(error.message)
       error.response
+    end
+
+    def ensure_token_valid
+      connect! unless @connection
+      conn = @connection.refresh!
+      @connection = conn if conn
     end
 
     # Create new connection between BeaconCtrl and BeaconClient
