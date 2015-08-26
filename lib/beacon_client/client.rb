@@ -42,26 +42,29 @@ module BeaconClient
       request(:patch, path, params)
     end
 
+    def refresh!
+      connect! unless @connection
+      conn = @connection.refresh!
+      @connection = conn if conn
+    end
+
     private
 
     # Sending request using OAuth2 + Faraday connection.
     # All credentials are automatically added.
-    def request(word, path, params)
+    def request(word, path, params, repeat=1)
       if BeaconClient.config.debug?
         BeaconClient.logger.debug("Path: #{path.inspect}")
         BeaconClient.logger.debug("Params: #{params.inspect}")
       end
-      ensure_token_valid
       connection.send(word, path, params: params)
     rescue OAuth2::Error => error
       BeaconClient.logger.error(error.message)
       error.response
-    end
-
-    def ensure_token_valid
-      connect! unless @connection
-      conn = @connection.refresh!
-      @connection = conn if conn
+    rescue
+      refresh!
+      repeat-=1
+      retry if repeat >= 0
     end
 
     # Create new connection between BeaconCtrl and BeaconClient
@@ -70,6 +73,7 @@ module BeaconClient
       @connection = user ? connection_for_user : connection_for_application
       @auth_token = @connection.token
       BeaconClient.logger.debug("Client token: #{@auth_token}") if BeaconClient.config.debug?
+      @auth_token
     rescue OAuth2::Error => error
       BeaconClient.logger.error(error.message)
       BeaconClient.logger.error(error.backtrace.join("\n"))

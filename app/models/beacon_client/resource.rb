@@ -85,6 +85,10 @@ module BeaconClient
         @@client
       end
 
+      def refresh!
+        connection.refresh!
+      end
+
       # JSON key in which are stored object data.
       #
       # @return [String]
