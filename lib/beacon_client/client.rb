@@ -57,7 +57,11 @@ module BeaconClient
         BeaconClient.logger.debug("Path: #{path.inspect}")
         BeaconClient.logger.debug("Params: #{params.inspect}")
       end
-      connection.send(word, path, params: params)
+      response = connection.send(word, path, params: params)
+      if BeaconClient.config.debug?
+        BeaconClient.logger.debug("Params: #{response.inspect}")
+      end
+      response
     rescue OAuth2::Error => error
       BeaconClient.logger.error(error.message)
       error.response

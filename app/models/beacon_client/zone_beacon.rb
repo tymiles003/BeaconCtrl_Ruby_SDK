@@ -11,5 +11,16 @@ module BeaconClient
     self.parent_class = BeaconClient::Zone
 
     self.resource_name = 'beacon'
+    self.fetch_collection_key = 'ranges'
+    self.fetch_instance_key = 'range'
+
+    attributes :id
+    attributes :name
+    attributes :proximity_id
+    attributes :location
+    attributes :zone
+    attributes :vendor
+    attributes :protocol
+    attributes :unique_id
   end
 end
