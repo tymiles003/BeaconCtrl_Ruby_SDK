@@ -11,7 +11,7 @@ module BeaconClient
     self.fetch_collection_key = 'ranges'
     self.fetch_instance_key = 'range'
 
-    attributes :id, :name, :proximity_id, :uuid, :major, :minor, :protocol, :vendor, :device_type
+    attributes :id, :name, :proximity_id, :uuid, :major, :minor, :protocol, :vendor, :device_type, :unique_id
 
     has_one :location, BeaconClient::Location
     has_one :zone, BeaconClient::Zone
