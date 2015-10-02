@@ -181,10 +181,16 @@ module BeaconClient
       # @param [String] key
       def fetch_collection(response, key=fetch_collection_key)
         log_response(response) if response.status > 299
-        body = response.parsed.is_a?(Hash) ? response.parsed : nil
-        array = body && body[key] ? body[key] : []
+        array = []
+        if response.parsed.is_a?(Hash)
+          body = response.parsed.is_a?(Hash) ? response.parsed : nil
+          array = body && body[key] ? body[key] : []
+        elsif response.parsed.is_a?(Array)
+          array = response.parsed
+        end
         array.map do |json|
           instance = new json
+          yield instance if block_given?
           instance.send(:persist!)
           instance
         end
